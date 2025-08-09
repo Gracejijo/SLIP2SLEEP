@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Final Destination</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+body {
+    background-color: #3b7a3b;
+    background-image: 
+        linear-gradient(45deg, rgba(0,0,0,0.05) 25%, transparent 25%), 
+        linear-gradient(-45deg, rgba(0,0,0,0.05) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(0,0,0,0.05) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(0,0,0,0.05) 75%);
+    background-size: 40px 40px;
+    background-position: 0 0, 0 20px, 20px -20px, -20px 0px;
+    color: #fff;
+    font-family: 'Press Start 2P', monospace;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    overflow-x: hidden;
+}
+
+h1 {
+    margin-top: 30px;
+    font-size: 1.5em;
+    text-shadow: 2px 2px 0 #000;
+}
+
+.cemetery {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 40px;
+    justify-items: center;
+    margin: 40px auto;
+    max-width: 900px;
+}
+
+.tombstone {
+    width: 48px;
+    height: 64px;
+    background: #aaa;
+    border: 4px solid #555;
+    border-radius: 8px 8px 0 0;
+    position: relative;
+    box-shadow: inset 0 -4px #777;
+    cursor: pointer;
+}
+.tombstone::before {
+    content: "";
+    position: absolute;
+    bottom: -6px;
+    left: -4px;
+    width: 56px;
+    height: 6px;
+    background: #555;
+}
+
+.flower {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    pointer-events: none;
+}
+.flower .petal {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: red;
+    border-radius: 50%;
+}
+.flower.yellow .petal { background: yellow; }
+.flower .petal:nth-child(1) { top: 0; left: 3px; }
+.flower .petal:nth-child(2) { top: 3px; left: 6px; }
+.flower .petal:nth-child(3) { top: 6px; left: 3px; }
+.flower .petal:nth-child(4) { top: 3px; left: 0; }
+.flower .center {
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 6px; height: 6px;
+    background: orange;
+    border-radius: 50%;
+}
+
+#calendar {
+    margin-top: 20px;
+    font-family: 'Press Start 2P';
+    padding: 5px;
+    font-size: 10px;
+}
+
+.popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #f5f5f5;
+    color: #000;
+    padding: 15px;
+    border: 3px solid #000;
+    z-index: 10;
+    display: none;
+    font-size: 10px;
+    max-width: 200px;
+    box-shadow: 4px 4px #333;
+}
+.popup input {
+    width: 100%;
+    font-family: inherit;
+    font-size: 10px;
+    margin-bottom: 5px;
+}
+.popup img {
+    max-width: 100%;
+    image-rendering: pixelated;
+}
+button {
+    font-family: inherit;
+    font-size: 10px;
+    padding: 4px;
+    background: #333;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+button:hover {
+    background: #555;
+}
+
+.back-button {
+    display: inline-block;
+    margin-top: 30px;
+    padding: 10px 20px;
+    background: #444;
+    color: white;
+    text-decoration: none;
+    border: 2px solid #000;
+    box-shadow: 4px 4px #000;
+    font-size: 10px;
+}
+.back-button:hover {
+    background: #666;
+}
+
+.tomb-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 6px;
+    line-height: 1.2;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.8);
+    position: absolute;
+    bottom: 8px;
+    left: 4px;
+    right: 4px;
+    pointer-events: none;
+    word-break: break-word;
+}
+
+/* Bushes */
+.bush {
+    position: absolute;
+    bottom: 0;
+    width: 80px;
+    height: 50px;
+    background: radial-gradient(circle at center, #2b7a2b 40%, #1f5d1f 100%);
+    border-radius: 50%;
+    box-shadow: inset -4px -4px rgba(0, 0, 0, 0.3);
+}
+
+/* Trees */
+.tree {
+    position: absolute;
+    bottom: 0;
+    width: 60px;
+    height: 100px;
+}
+
+.tree .trunk {
+    position: absolute;
+    bottom: 0;
+    left: 25px;
+    width: 10px;
+    height: 40px;
+    background: #5b3b1a;
+}
+
+.tree .leaves {
+    position: absolute;
+    bottom: 30px;
+    left: 0;
+    width: 60px;
+    height: 70px;
+    background: radial-gradient(circle at center, #3a8c3a 40%, #2b6f2b 100%);
+    border-radius: 50%;
+}
+</style>
+</head>
+<body>
+<h1>FINAL DESTINATION</h1>
+
+<div class="cemetery" id="cemetery"></div>
+<input type="date" id="calendar">
+<div class="popup" id="popup"></div>
+
+<a href="index.html" class="back-button">BACK TO MAIN PAGE</a>
+
+<script>
+const cemetery = document.getElementById('cemetery');
+const popup = document.getElementById('popup');
+const calendar = document.getElementById('calendar');
+const tombData = {};
+
+// Generate 40 tombstones
+for (let i = 0; i < 40; i++) {
+    const tomb = document.createElement('div');
+    tomb.className = 'tombstone';
+    tomb.dataset.id = i;
+
+    const label = document.createElement('div');
+    label.className = 'tomb-label';
+    label.innerHTML = '';
+    tomb.appendChild(label);
+
+    tomb.onclick = () => handleTombClick(i);
+    cemetery.appendChild(tomb);
+}
+
+// Random flower placement (30 flowers)
+function placeFlowers() {
+    for (let i = 0; i < 30; i++) {
+        const flower = document.createElement('div');
+        flower.className = 'flower ' + (Math.random() > 0.5 ? 'yellow' : '');
+        for (let j = 0; j < 4; j++) {
+            const petal = document.createElement('div');
+            petal.className = 'petal';
+            flower.appendChild(petal);
+        }
+        const center = document.createElement('div');
+        center.className = 'center';
+        flower.appendChild(center);
+
+        flower.style.left = Math.random() * (window.innerWidth - 20) + 'px';
+        flower.style.top = Math.random() * (window.innerHeight - 20) + 'px';
+        document.body.appendChild(flower);
+    }
+}
+placeFlowers();
+
+function handleTombClick(id) {
+    const selectedDate = calendar.value || null;
+    if (!tombData[id]) {
+        popup.innerHTML = `
+            <h4>Enter Details</h4>
+            <input type="date" id="deathDate"><br>
+            <input type="text" id="name" placeholder="Name"><br>
+            <input type="text" id="lastWords" placeholder="Last Words"><br>
+            <input type="file" id="photo"><br>
+            <button onclick="saveData(${id})">Save</button>
+        `;
+        popup.style.display = 'block';
+    } else {
+        const data = tombData[id];
+        if (selectedDate && data.date !== selectedDate) return;
+        popup.innerHTML = `
+            <strong>${data.name}</strong><br>
+            Date: ${data.date}<br>
+            "${data.words}"<br>
+            ${data.photo ? `<img src="${data.photo}">` : ''}
+            <br><button onclick="popup.style.display='none'">Close</button>
+        `;
+        popup.style.display = 'block';
+    }
+}
+
+function saveData(id) {
+    const date = document.getElementById('deathDate').value;
+    const name = document.getElementById('name').value;
+    const words = document.getElementById('lastWords').value;
+    const fileInput = document.getElementById('photo');
+    let photoURL = '';
+    if (fileInput.files[0]) {
+        photoURL = URL.createObjectURL(fileInput.files[0]);
+    }
+    tombData[id] = { date, name, words, photo: photoURL };
+
+    // Update tomb label with name + date (light style)
+    const tomb = document.querySelector(`.tombstone[data-id='${id}'] .tomb-label`);
+    tomb.innerHTML = `${name || ''}<br><small>${date || ''}</small>`;
+
+    popup.style.display = 'none';
+    filterTombstones();
+}
+
+function filterTombstones() {
+    const selectedDate = calendar.value || null;
+    document.querySelectorAll('.tombstone').forEach((tomb, idx) => {
+        const data = tombData[idx];
+        tomb.style.opacity = (!selectedDate || (data && data.date === selectedDate)) ? 1 : 0.3;
+    });
+}
+
+calendar.addEventListener('change', filterTombstones);
+</script>
+</body>
+</html>

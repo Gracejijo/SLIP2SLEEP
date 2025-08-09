@@ -1,0 +1,5 @@
+# Force LF for all text files
+* text=auto eol=lf
+
+# Or, force CRLF if you want Windows style
+# * text=auto eol=crlf

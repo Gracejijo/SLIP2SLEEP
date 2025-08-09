@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Slip & Fall Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: #222;
+            color: #fff;
+            font-family: 'Press Start 2P', monospace, cursive;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        h1 {
+            margin-top: 30px;
+            font-size: 2em;
+            text-shadow: 2px 2px 0 #444;
+        }
+        a {
+            display: inline-block;
+            margin-top: 30px;
+            color: #fff;
+            background: #444;
+            padding: 10px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        a:hover {
+            background: #555;
+        }
+
+        /* New styles for the Cemetery button */
+        .cemetery-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            background: #444;
+            color: #fff;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 12px;
+            border: none;
+            cursor: pointer;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🎮 SLIP & FALL CALCULATOR 🎮</h1>
+        
+        <!-- Main Layout: Input on left, Simulation in center, Results on right -->
+        <div class="main-layout">
+            <!-- Left Side: Input Section -->
+            <div class="input-section">
+                <div class="input-card">
+                    <h3>📥 UPLOAD IMAGES</h3>
+                    
+                    <!-- Surface Upload -->
+                    <div class="upload-area" id="surfaceUpload">
+                        <div class="upload-content">
+                            <div class="pixel-icon">🌍</div>
+                            <p>Upload Surface Image</p>
+                            <small>Floor, ground, or surface material</small>
+                        </div>
+                        <input type="file" id="surfaceInput" accept="image/*" style="display: none;">
+                    </div>
+                    
+                    <!-- Object Upload -->
+                    <div class="upload-area" id="objectUpload">
+                        <div class="upload-content">
+                            <div class="pixel-icon">🎯</div>
+                            <p>Upload Object Image</p>
+                            <small>Object that causes slipping</small>
+                        </div>
+                        <input type="file" id="objectInput" accept="image/*" style="display: none;">
+                    </div>
+                    
+                    <!-- Person Details -->
+                    <div class="person-details">
+                        <h4>👤 PERSON DETAILS</h4>
+                        <div class="input-group">
+                            <label for="weight">Weight (kg):</label>
+                            <input type="number" id="weight" placeholder="70" min="1" max="500">
+                        </div>
+                        <div class="input-group">
+                            <label for="height">Height (cm):</label>
+                            <input type="number" id="height" placeholder="170" min="50" max="300">
+                        </div>
+                    </div>
+                    
+                    <!-- Calculate Button -->
+                    <button id="calculateBtn" class="retro-btn">
+                        <span class="btn-text">CALCULATE FALL</span>
+                        <div class="btn-particles"></div>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Center: Simulation Section -->
+            <div class="simulation-section">
+                <div class="simulation-card">
+                    <h3>🎮 SLIP & FALL SIMULATION</h3>
+                    <div class="simulation-container">
+                        <canvas id="simulationCanvas" width="400" height="300"></canvas>
+                    </div>
+                    <div class="simulation-controls">
+                        <button id="runSimulation" class="retro-btn" style="display: none;">
+                            <span class="btn-text">RUN SIMULATION</span>
+                            <div class="btn-particles"></div>
+                        </button>
+                        <button id="playSimulation" class="retro-btn" style="display: none;">
+                            <span class="btn-text">PLAY SIMULATION</span>
+                            <div class="btn-particles"></div>
+                        </button>
+                        <button id="resetSimulation" class="retro-btn" style="display: none;">
+                            <span class="btn-text">RESET</span>
+                            <div class="btn-particles"></div>
+                        </button>
+                    </div>
+                    <div class="simulation-info">
+                        <div class="sim-info-item">
+                            <span class="sim-label">Surface:</span>
+                            <span class="sim-value" id="simSurface">-</span>
+                        </div>
+                        <div class="sim-info-item">
+                            <span class="sim-label">Object:</span>
+                            <span class="sim-value" id="simObject">-</span>
+                        </div>
+                        <div class="sim-info-item">
+                            <span class="sim-label">Speed:</span>
+                            <span class="sim-value" id="simSpeed">0.00 m/s</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Side: Results Section -->
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <div class="result-card">
+                    <h3>🎯 FALL CALCULATION RESULTS</h3>
+                    <div class="result-item">
+                        <span class="result-label">Friction Coefficient:</span>
+                        <span class="result-value" id="frictionResult">0.000</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Final Speed:</span>
+                        <span class="result-value" id="speedResult">0.00 m/s</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Fall Duration:</span>
+                        <span class="result-value" id="durationResult">0.00 s</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Impact Force:</span>
+                        <span class="result-value" id="forceResult">0 N</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Fatality Rate:</span>
+                        <span class="result-value" id="fatalityResult">0%</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Status:</span>
+                        <span class="result-value" id="statusResult">ALIVE ✅</span>
+                    </div>
+                </div>
+                <div id="fatalityComment" style="margin-top:10px;font-style:italic;"></div>
+            </div>
+        </div>
+    </div>
+
+    <a href="final_destination.html" class="cemetery-btn">FINAL DESTINATION</a>
+
+    <script src="ai-config.js"></script>
+    <script src="ai.js"></script>
+    <script src="script.js"></script>
+
+</body>
+</html>
